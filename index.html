@@ -43,6 +43,7 @@
             font-weight: 500;
             line-height: 1.5;
         }
+        /* ✅ Tombol WA: bisa digeser DAN bisa diklik */
         .wa-float {
             position: fixed;
             right: 20px;
@@ -58,8 +59,16 @@
             font-weight: 500;
             text-decoration: none;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            z-index: 999;
+            z-index: 9999;
             white-space: nowrap;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: background-color 0.2s;
+        }
+        .wa-float:active {
+            cursor: grabbing;
+            opacity: 0.9;
         }
         .wa-float:hover {
             background-color: #1ebe5d;
@@ -149,7 +158,7 @@
                                 </div>
 
                                 <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="remember" id="remember">                                    
+                                    <input type="checkbox" class="form-check-input" name="remember" id="remember" checked>                                    
                                     <label class="form-check-label" for="remember" id="teksIngat">
                                         Ingat Saya
                                     </label>
@@ -157,7 +166,7 @@
 
                                 <!-- Pesan notifikasi -->
                                 <div id="infoAlert" class="alert-info">
-                                    Pengguna baru diwajibkan Registrasi di tombol bewarna merah !!
+                                    Pengguna baru harus Registrasi di tombol warna merah !!
                                 </div>
                                 
                                 
@@ -176,7 +185,7 @@
                 <!-- Tombol daftar merah & teks pengganti -->
                 <div class="mt-3" id="wadahTombol">
                     <a href="https://ordersosmed.id/auth/register" class="btn-daftar" id="tombolDaftar" onclick="tandaiDanTunda()">Pengguna baru? Registrasi sekarang !!</a>
-                    <div id="teksSetelahDaftar" class="teks-terdaftar">✅ Anda sudah Registrasi.<br>Harap masukan username dan password yang sudah dibuat tadi</div>
+                    <div id="teksSetelahDaftar" class="teks-terdaftar">✅ Anda sudah Registrasi.......<br>Silahkan masukkan Username dan Password yang telah Anda buat sebelumnya !!</div>
                 </div>
 
             </div>
@@ -184,29 +193,156 @@
     </div>
 </div>
 
-<a href="https://wa.me/+6283824692223" target="_blank" class="wa-float">
-    💬 Hubungi kami!
+<!-- ✅ Link WA langsung ke nomor kamu -->
+<a href="https://kakungentertainment.github.io/hubungikakung.github.io/" target="_blank" class="wa-float" id="tombolWA">
+    💬 Hubungi kami !!
 </a>
 
 <footer class="footer footer-alt" style="left: 0; border: none; text-align: center; background-color: transparent; padding: 15px 0;">
-    <a href="https://kakungentertainment.github.io" target="_blank" class="footer-link"> --> Mbah Kakung ( FAIZ ) <-- </a>
+    <a href="https://kakungentertainment.github.io" target="_blank" class="footer-link">ᴍʙᴀʜ.ᴋᴀᴋᴜɴɢ.ꜰᴀɪᴢ</a>
 </footer>
 
 <script>
-// Saat halaman dimuat: cek status
+// ✅ FITUR GESER + KLIK TOMBOL WA
+const tombolWA = document.getElementById('tombolWA');
+let geserAktif = false;
+let jarakX, jarakY;
+let waktuSentuhMulai = 0;
+let posisiSentuhMulaiX = 0;
+let posisiSentuhMulaiY = 0;
+
+// Mulai sentuh/klik
+tombolWA.addEventListener('touchstart', mulaiAksi, {passive: false});
+tombolWA.addEventListener('mousedown', mulaiAksi);
+
+// Proses geser
+document.addEventListener('touchmove', prosesGeser, {passive: false});
+document.addEventListener('mousemove', prosesGeser);
+
+// Selesai: cuma geser atau mau diklik
+document.addEventListener('touchend', selesaiAksi);
+document.addEventListener('mouseup', selesaiAksi);
+
+function mulaiAksi(e) {
+    geserAktif = true;
+    waktuSentuhMulai = Date.now();
+    const kursor = e.touches ? e.touches[0] : e;
+    posisiSentuhMulaiX = kursor.clientX;
+    posisiSentuhMulaiY = kursor.clientY;
+    
+    const posisi = tombolWA.getBoundingClientRect();
+    jarakX = kursor.clientX - posisi.left;
+    jarakY = kursor.clientY - posisi.top;
+}
+
+function prosesGeser(e) {
+    if (!geserAktif) return;
+    const kursor = e.touches ? e.touches[0] : e;
+    const pergeseranX = Math.abs(kursor.clientX - posisiSentuhMulaiX);
+    const pergeseranY = Math.abs(kursor.clientY - posisiSentuhMulaiY);
+
+    // Hanya geser jika digeser agak jauh
+    if (pergeseranX > 8 || pergeseranY > 8) {
+        const posisiX = kursor.clientX - jarakX;
+        const posisiY = kursor.clientY - jarakY;
+        
+        // Batas layar
+        const lebarLayar = window.innerWidth - tombolWA.offsetWidth - 10;
+        const tinggiLayar = window.innerHeight - tombolWA.offsetHeight - 10;
+        const xTerbatas = Math.max(10, Math.min(posisiX, lebarLayar));
+        const yTerbatas = Math.max(10, Math.min(posisiY, tinggiLayar));
+
+        tombolWA.style.left = xTerbatas + 'px';
+        tombolWA.style.right = 'auto';
+        tombolWA.style.top = yTerbatas + 'px';
+        tombolWA.style.bottom = 'auto';
+
+        e.preventDefault();
+    }
+}
+
+function selesaiAksi(e) {
+    if (!geserAktif) return;
+    geserAktif = false;
+    const durasi = Date.now() - waktuSentuhMulai;
+    const kursor = e.changedTouches ? e.changedTouches[0] : e;
+    const pergeseranX = Math.abs(kursor.clientX - posisiSentuhMulaiX);
+    const pergeseranY = Math.abs(kursor.clientY - posisiSentuhMulaiY);
+
+    // Jika sentuh sebentar & tidak digeser jauh -> anggap sebagai KLIK
+    if (durasi < 200 && pergeseranX < 8 && pergeseranY < 8) {
+        e.stopPropagation();
+        e.preventDefault();
+        // Buka WA di tab/aplikasi eksternal
+        if (typeof window.open === 'function') {
+            window.open(tombolWA.href, '_system');
+        } else {
+            window.location.href = tombolWA.href;
+        }
+    }
+}
+
+// Saat halaman dimuat: ambil posisi terakhir tombol WA
 window.addEventListener('load', function() {
+    const posisiTersimpan = localStorage.getItem('posisi_tombol_wa');
+    if (posisiTersimpan) {
+        const { x, y } = JSON.parse(posisiTersimpan);
+        tombolWA.style.left = x + 'px';
+        tombolWA.style.right = 'auto';
+        tombolWA.style.top = y + 'px';
+        tombolWA.style.bottom = 'auto';
+    }
+
+    // Simpan posisi setiap selesai digeser
+    setInterval(() => {
+        if (!geserAktif && tombolWA.style.left) {
+            const x = parseInt(tombolWA.style.left);
+            const y = parseInt(tombolWA.style.top);
+            localStorage.setItem('posisi_tombol_wa', JSON.stringify({x, y}));
+        }
+    }, 1000);
+
+    // Ambil status tombol daftar
     if (localStorage.getItem('sudah_klik_daftar') === 'ya') {
         tampilkanTeksPengganti();
     }
+
+    // ✅ Ambil dan isi kembali username & password
+    const ingatSaya = localStorage.getItem('ingat_saya') === 'aktif';
+    if (ingatSaya) {
+        const tersimpanUser = localStorage.getItem('tersimpan_username');
+        const tersimpanPass = localStorage.getItem('tersimpan_password');
+        if (tersimpanUser) document.getElementById('username').value = tersimpanUser;
+        if (tersimpanPass) document.getElementById('password').value = tersimpanPass;
+        document.getElementById('remember').checked = true;
+    }
+
+    // Simpan otomatis saat mengetik
+    document.getElementById('username').addEventListener('input', simpanData);
+    document.getElementById('password').addEventListener('input', simpanData);
+    document.getElementById('remember').addEventListener('change', simpanData);
 });
 
-// Fungsi: tandai, lalu jeda 1,5 detik sebelum berubah
+// ✅ Fungsi simpan data login
+function simpanData() {
+    const ingat = document.getElementById('remember').checked;
+    localStorage.setItem('ingat_saya', ingat ? 'aktif' : 'mati');
+
+    if (ingat) {
+        const user = document.getElementById('username').value;
+        const pass = document.getElementById('password').value;
+        localStorage.setItem('tersimpan_username', user);
+        localStorage.setItem('tersimpan_password', pass);
+    } else {
+        localStorage.removeItem('tersimpan_username');
+        localStorage.removeItem('tersimpan_password');
+    }
+}
+
+// Fungsi tandai tombol daftar
 function tandaiDanTunda() {
     localStorage.setItem('sudah_klik_daftar', 'ya');
-    // Beri jeda 1,5 detik setelah diklik
-    setTimeout(function() {
-        tampilkanTeksPengganti();
-    }, 1500);
+    setTimeout(tampilkanTeksPengganti, 1500);
 }
 
 function tampilkanTeksPengganti() {
@@ -216,37 +352,29 @@ function tampilkanTeksPengganti() {
     
     if (tombol) tombol.style.display = 'none';
     if (teksBaru) teksBaru.style.display = 'block';
-    // Ubah tulisan Ingat Saya
     if (teksIngat) teksIngat.innerHTML = "Anda akan diarahkan ke halaman selanjutnya untuk konfirmasi Username dan Password";
 }
 
 function prosesMasuk() {
+    simpanData();
     const sudahKlikDaftar = localStorage.getItem('sudah_klik_daftar');
     const sudahTampil = localStorage.getItem('pesanTampil');
     const kotakPesan = document.getElementById('infoAlert');
 
-    // Jika tombol sudah diklik atau pesan sudah pernah muncul -> langsung pindah halaman
-    if (sudahKlikDaftar === 'ya' || sudahTampil === 'ya') {
-        return true;
-    }
+    if (sudahKlikDaftar === 'ya' || sudahTampil === 'ya') return true;
 
-    // Klik pertama kali: tampilkan pesan saja
     kotakPesan.style.display = 'block';
     kotakPesan.style.opacity = '1';
     localStorage.setItem('pesanTampil', 'ya');
 
-    // Hilangkan pesan setelah 5 detik
     setTimeout(() => {
         kotakPesan.style.opacity = '0';
-        setTimeout(() => {
-            kotakPesan.style.display = 'none';
-        }, 500);
+        setTimeout(() => kotakPesan.style.display = 'none', 500);
     }, 5000);
 
-    // Tidak pindah halaman dulu
     return false;
 }
 </script>
 
 </body>
-</html>
+    </html>
