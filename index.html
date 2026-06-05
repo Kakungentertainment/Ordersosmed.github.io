@@ -339,10 +339,11 @@ function simpanData() {
     }
 }
 
-// Fungsi tandai tombol daftar
+// ✅ Fungsi yang diubah: jeda 5 detik sebelum tombol hilang
 function tandaiDanTunda() {
     localStorage.setItem('sudah_klik_daftar', 'ya');
-    setTimeout(tampilkanTeksPengganti, 1500);
+    // Ubah dari 5000ms menjadi 5000ms = 5 detik
+    setTimeout(tampilkanTeksPengganti, 5000);
 }
 
 function tampilkanTeksPengganti() {
